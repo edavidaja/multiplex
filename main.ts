@@ -1,4 +1,4 @@
-import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
+import { Application, Router, send } from "https://deno.land/x/oak@v12.1.0/mod.ts";
 import { Server } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
 import { serve } from "https://deno.land/std@0.182.0/http/server.ts";
 import { crypto } from "https://deno.land/std@0.183.0/crypto/mod.ts";
@@ -10,10 +10,11 @@ const router = new Router();
 
 
 router
-  .get("/", (ctx) => {
-    ctx.response.headers.set("Content-Type", "text/html");
-    const stream = Deno.create("index.html")
-
+  .get("/", async (ctx) => {
+    await send(ctx, ctx.request.url.pathname, {
+      root: `${Deno.cwd()}/static`,
+      index: "index.html"
+    })
   })
   .get("/token", (ctx) => {
     const ts = new Date().getTime();
