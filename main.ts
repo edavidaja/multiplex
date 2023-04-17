@@ -1,4 +1,8 @@
-import { Application, Router, send } from "https://deno.land/x/oak@v12.1.0/mod.ts";
+import {
+  Application,
+  Router,
+  send,
+} from "https://deno.land/x/oak@v12.1.0/mod.ts";
 import { Server } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
 import { serve } from "https://deno.land/std@0.182.0/http/server.ts";
 import { crypto } from "https://deno.land/std@0.183.0/crypto/mod.ts";
@@ -8,24 +12,24 @@ const app = new Application();
 const io = new Server();
 const router = new Router();
 
-
 router
   .get("/", async (ctx) => {
     await send(ctx, ctx.request.url.pathname, {
       root: `${Deno.cwd()}/static`,
-      index: "index.html"
-    })
+      index: "index.html",
+    });
   })
-  .get("/token", (ctx) => {
+  .get("/token", async (ctx) => {
     const ts = new Date().getTime();
     const rand = Math.floor(Math.random() * 9999999);
     const secret = ts.toString() + rand.toString();
-    ctx.response.body({ secret: secret, socketId: createHash(secret) });
+    ctx.response.body = { secret: secret, socketId: await createHash(secret) };
   });
 
-const createHash = async (secret) => {
-  const cipher = await crypto.subtle.digest("SHAKE128", secret);
-  return toHashString(cipher);
+const createHash = async (secret: string) => {
+  const data = new TextEncoder().encode(secret);
+  const hash = await crypto.subtle.digest("SHAKE128", data);
+  return toHashString(hash);
 };
 
 io.on("connection", (socket) => {
