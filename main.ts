@@ -47,7 +47,7 @@ io.on("connection", (socket) => {
 });
 
 app.use(oakCors({
-  origin: "*",
+  origin: "http://localhost:8000",
   credentials: true,
 }))
 app.use(router.routes());
