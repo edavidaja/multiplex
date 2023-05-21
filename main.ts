@@ -7,6 +7,7 @@ import { Server } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
 import { serve } from "https://deno.land/std@0.182.0/http/server.ts";
 import { crypto } from "https://deno.land/std@0.183.0/crypto/mod.ts";
 import { toHashString } from "https://deno.land/std@0.183.0/crypto/to_hash_string.ts";
+import {oakCors} from "https://deno.land/x/cors@v1.2.2/mod.ts"
 
 const app = new Application();
 const io = new Server();
@@ -45,6 +46,7 @@ io.on("connection", (socket) => {
   });
 });
 
+app.use(oakCors())
 app.use(router.routes());
 app.use(router.allowedMethods());
 
