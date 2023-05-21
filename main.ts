@@ -46,7 +46,10 @@ io.on("connection", (socket) => {
   });
 });
 
-app.use(oakCors())
+app.use(oakCors({
+  origin: "*",
+  credentials: true,
+}))
 app.use(router.routes());
 app.use(router.allowedMethods());
 
