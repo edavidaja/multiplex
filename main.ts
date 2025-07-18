@@ -2,12 +2,11 @@ import {
   Application,
   Router,
   send,
-} from "https://deno.land/x/oak@v12.1.0/mod.ts";
-import { Server } from "https://deno.land/x/socket_io@0.2.0/mod.ts";
-import { serve } from "https://deno.land/std@0.182.0/http/server.ts";
-import { crypto } from "https://deno.land/std@0.183.0/crypto/mod.ts";
-import { toHashString } from "https://deno.land/std@0.183.0/crypto/to_hash_string.ts";
-import {oakCors} from "https://deno.land/x/cors@v1.2.2/mod.ts"
+} from "oak";
+import { Server } from "socket.io";
+import { serve } from "std/http/server.ts";
+import { crypto } from "std/crypto/mod.ts";
+import { encode } from "std/encoding/hex.ts";
 
 const app = new Application();
 const io = new Server();
@@ -30,27 +29,36 @@ router
 const createHash = async (secret: string) => {
   const data = new TextEncoder().encode(secret);
   const hash = await crypto.subtle.digest("SHAKE128", data);
-  return toHashString(hash);
+  return new TextDecoder().decode(encode(new Uint8Array(hash)));
 };
 
 io.on("connection", (socket) => {
-  socket.on("multiplex-statechanged", (data) => {
+  socket.on("multiplex-statechanged", async (data) => {
     if (
       typeof data.secret == "undefined" || data.secret == null ||
       data.secret === ""
     ) return;
-    if (createHash(data.secret) === data.socketId) {
+    if (await createHash(data.secret) === data.socketId) {
       data.secret = null;
       socket.broadcast.emit(data.socketId, data);
     }
   });
 });
 
-app.use(oakCors({
-  origin: "*",
-  credentials: true,
-  preflightContinue: true
-}))
+// Set CORS headers directly
+app.use(async (ctx, next) => {
+  ctx.response.headers.set("Access-Control-Allow-Origin", "*");
+  ctx.response.headers.set("Access-Control-Allow-Credentials", "true");
+  ctx.response.headers.set("Access-Control-Allow-Methods", "GET, HEAD, PUT, PATCH, POST, DELETE");
+  ctx.response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  
+  if (ctx.request.method === "OPTIONS") {
+    ctx.response.status = 204;
+    return;
+  }
+  
+  await next();
+})
 app.use(router.routes());
 app.use(router.allowedMethods());
 
