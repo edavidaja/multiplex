@@ -47,7 +47,7 @@ io.on("connection", (socket) => {
 });
 
 app.use(oakCors({
-  origin: "http://*:8000",
+  origin: "*",
   credentials: true,
   preflightContinue: true
 }))
