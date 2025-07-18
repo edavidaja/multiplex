@@ -1,5 +1,12 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts"
+    "dev": "deno run --allow-net --watch main.ts"
+  },
+  "imports": {
+    "oak": "https://deno.land/x/oak@v12.1.0/mod.ts",
+    "socket.io": "https://deno.land/x/socket_io@0.2.0/mod.ts",
+    "std/crypto/mod.ts": "https://deno.land/std@0.183.0/crypto/mod.ts",
+    "std/encoding/hex.ts": "https://deno.land/std@0.183.0/encoding/hex.ts",
+    "std/http/server.ts": "https://deno.land/std@0.182.0/http/server.ts"
   }
 }
